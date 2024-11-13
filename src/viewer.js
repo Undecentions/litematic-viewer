@@ -330,13 +330,13 @@ function structureFromLitematic(litematic) {
         for (let z = start_z; z < Math.max(0, region.depth); z++) {
           const blockID = blocks[x - start_x][y - start_y][z - start_z];
           const position = [x + origin_x - global_x, y + origin_y - global_y, z + origin_z - global_z];
-        if (blockID > 0) { // Skip air-blocks
+          if (blockID > 0) { // Skip air-blocks
             if (blockID < blockPalette.length) {
               const blockInfo = blockPalette[blockID];
               const blockName = blockInfo.Name;
-            blockCount++;
+              blockCount++;
 
-            if (blockInfo.hasOwnProperty("Properties")) {
+              if (blockInfo.hasOwnProperty("Properties")) {
                 structure.addBlock(position, blockName, blockInfo.Properties);
               } else {
                 structure.addBlock(position, blockName);

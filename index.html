@@ -318,6 +318,33 @@
                request.send();
             }
 
+            function readFile(file) {
+               let reader = new FileReader();
+               reader.readAsArrayBuffer(file);
+               console.log(reader.result);
+
+               reader.onload = function(evt) {
+                  var buff = new Uint8Array(reader.result);
+                  console.log(buff);
+
+                  const nbtdata = deepslate.NbtFile.read(new Uint8Array(reader.result), { compression: "gzip" }).toJson();//.result; // Don't care about .compressed
+                  console.log("Loaded litematic with NBT data:")
+                  console.log(nbtdata);
+                  var litematic = readLitematicFromNBTData(nbtdata);
+
+                  createRenderer(structureFromLitematic(litematic));
+
+                  // Remove input form to stop people submitting twice
+                  const elem = document.getElementById('file-loader-panel');
+                  elem.parentNode.removeChild(elem);
+               };
+
+               reader.onerror = function() {
+                  console.log(reader.error);
+               };
+
+            }
+
             function dragOverHandler(ev) {
               // Prevent default behavior (Prevent file from being opened)
               ev.preventDefault();
