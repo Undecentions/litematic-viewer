@@ -86,7 +86,7 @@ function createRenderer(structure) {
   // Create Deepslate Renderer
   // Need chunksize 8 as seems to be a max number of faces per chunk that will render
   const gl = canvas.getContext('webgl');
-  const renderer = new deepslate.StructureRenderer(gl, structure, deepslateResources, options={chunkSize: 8});
+  const renderer = new deepslate.StructureRenderer(gl, structure, deepslateResources, options={chunkSize: 8, useInvisibleBlockBuffer: false});
 
   // Crappy controls
   let viewDist = 4;
