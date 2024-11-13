@@ -1,7 +1,10 @@
 class Litematic { }
 
 class LitematicRegion {
-  constructor(width, height, depth) {
+  constructor(x, y, z, width, height, depth) {
+    this.x = x
+    this.y = y
+    this.z = z
     this.width = width;
     this.height = height;
     this.depth = depth;
@@ -24,6 +27,9 @@ function readLitematicFromNBTData(nbtdata) {
     // Find the minimum number of bits needed to express all blocks
     nbits = Math.ceil(Math.log2(blockPalette.length));
 
+    x = region.Position.value.x.value;
+    y = region.Position.value.y.value;
+    z = region.Position.value.z.value;
     width = region.Size.value.x.value; 
     height = region.Size.value.y.value;
     depth = region.Size.value.z.value; 
@@ -32,7 +38,7 @@ function readLitematicFromNBTData(nbtdata) {
 
     var blocks = processNBTRegionData(blockData, nbits, width, height, depth);
 
-    var litematicRegion = new LitematicRegion(width, height, depth);
+    var litematicRegion = new LitematicRegion(x, y, z, width, height, depth);
     litematicRegion.blocks = blocks;
     litematicRegion.blockPalette = blockPalette;
 
