@@ -255,3 +255,80 @@ function createRenderCanvas() {
     }
   }
 }
+
+function structureFromLitematic(litematic) {
+  let width = height = depth = 0;
+  let global_x = global_y = global_z = Infinity;
+
+  for (const region of litematic.regions) {
+    global_x = Math.min(global_x, region.x, region.x + region.width);
+    global_y = Math.min(global_y, region.y, region.y + region.height);
+    global_z = Math.min(global_z, region.z, region.z + region.depth);
+    width = Math.max(width, region.x, region.x + region.width);
+    height = Math.max(height, region.y, region.y + region.height);
+    depth = Math.max(depth, region.z, region.z + region.depth);
+  }
+
+  const structure = new deepslate.Structure([width - global_x, height - global_y, depth - global_z]);
+
+  // Add blocks from litematic NBT
+  console.log("Building", litematic.regions.length, "regions")
+  for (let region of litematic.regions) {
+    console.log("Building region start.");
+    // When lazy to do anything so just unpack
+    const {x: origin_x, y: origin_y, z: origin_z, blocks, blockPalette} = region;
+    let blockCount = 0; // What do we do with this?
+
+    // Unless there's a way to do this easier
+    const dx = region.width > 0 ? 1 : -1;
+    const dy = region.length > 0 ? 1 : -1;
+    const dz = region.depth > 0 ? 1 : -1;
+    const start_x = Math.min(0, region.width);
+    const start_y = Math.min(0, region.height);
+    const start_z = Math.min(0, region.depth);
+
+    // One reason js is annoying... the funny thing is that
+    // this whole thing can be done easily with Python's
+    // negative indicies for negative region sizes
+    for (let x = start_x; x < Math.max(0, region.width); x++) {
+      for (let y = start_y; y < Math.max(0, region.height); y++) {
+        for (let z = start_z; z < Math.max(0, region.depth); z++) {
+          const blockID = blocks[x - start_x][y - start_y][z - start_z];
+          const position = [x + origin_x - global_x, y + origin_y - global_y, z + origin_z - global_z];
+        if (blockID > 0) { // Skip air-blocks
+            if (blockID < blockPalette.length) {
+              const blockInfo = blockPalette[blockID];
+              const blockName = blockInfo.Name;
+            blockCount++;
+
+            if (blockInfo.hasOwnProperty("Properties")) {
+                structure.addBlock(position, blockName, blockInfo.Properties);
+              } else {
+                structure.addBlock(position, blockName);
+              }
+            } else {
+              // Something obvious so we know when things go wrong
+              // Why not throw some error or something
+              structure.addBlock(position, "minecraft:stone");
+            }
+          }
+        }
+      }
+    }
+    console.log("Region done.", blockCount, "blocks created.");
+  }
+  console.log("Done!");
+
+  return structure;
+}
+
+
+/* Set the width of the side navigation to 250px */
+function openSettings() {
+  document.getElementById("settings-panel").style.width = "800px";
+}
+
+/* Set the width of the side navigation to 0 */
+function closeSettings() {
+  document.getElementById("settings-panel").style.width = "0";
+}
