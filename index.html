@@ -7,9 +7,10 @@
       <title>Litematic Viewer</title>
 
       <!-- Deepslate -->
-      <script src="https://unpkg.com/deepslate@0.10.1"></script>
+      <!--<script src="https://unpkg.com/deepslate@0.22.4?module"></script>-->
       <script src="https://unpkg.com/gl-matrix@3.4.3/gl-matrix-min.js"></script>
 
+      <script src="src/deepslate.js"></script>
       <script src="resource/assets.js"></script>
       <script src="resource/opaque.js"></script>
 
@@ -209,9 +210,9 @@
                   var buff = new Uint8Array(reader.result);
                   console.log(buff);
 
-                  const nbtdata = deepslate.readNbt(new Uint8Array(reader.result));//.result; // Don't care about .compressed
+                  const nbtdata = deepslate.NbtFile.read(new Uint8Array(reader.result), { compression: "gzip" }).toJson();//.result; // Don't care about .compressed
                   console.log("Loaded litematic with NBT data:")
-                  console.log(nbtdata.value);
+                  console.log(nbtdata);
                   var litematic = readLitematicFromNBTData(nbtdata);
 
                   createRenderer(structureFromLitematic(litematic));

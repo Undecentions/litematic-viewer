@@ -17,7 +17,7 @@ function readLitematicFromNBTData(nbtdata) {
   var litematic = new Litematic();
   litematic.regions = new Array();
 
-  var regions = nbtdata.value.Regions.value;
+  var regions = nbtdata.root.Regions.value;
   for (let regionName in regions) {
     
     var region = regions[regionName].value;
@@ -105,19 +105,22 @@ function processNBTRegionData(regionData, nbits, width, height, depth) {
 
 // Hacky function needed to convert NBT to pure JSON
 // use at your own risk
+//
+// edited for new deepslate NBG implementation
+// exercise extreme caution
 function __stripNBTTyping(nbtData) {
   if (nbtData.hasOwnProperty("type")) {
-    switch(nbtData.type) {
-      case "compound":
+    switch(deepslate.NbtType[nbtData.type]) {
+      case "Compound":
         var newDict = {}
         for (const [k, v] of Object.entries(nbtData.value)) {
           newDict[k] = __stripNBTTyping(v);
         }
         return newDict;
         break;
-      case "list":
+      case "List":
         var newList = [];
-        for (const [k, v] of Object.entries(nbtData.value.value)) {
+        for (const [k, v] of Object.entries(nbtData.value.items)) {
           newList[k] = __stripNBTTyping(v);
         }
         return newList;

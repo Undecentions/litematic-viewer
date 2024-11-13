@@ -27,12 +27,12 @@ function upperPowerOfTwo(x) {
 function loadResources(textureImage) {
   const blockDefinitions = {};
   Object.keys(assets.blockstates).forEach(id => {
-    blockDefinitions['minecraft:' + id] = deepslate.BlockDefinition.fromJson(id, assets.blockstates[id]);
+    blockDefinitions['minecraft:' + id] = deepslate.BlockDefinition.fromJson(assets.blockstates[id]);
   })
 
   const blockModels = {};
   Object.keys(assets.models).forEach(id => {
-    blockModels['minecraft:' + id] = deepslate.BlockModel.fromJson(id, assets.models[id]);
+    blockModels['minecraft:' + id] = deepslate.BlockModel.fromJson(assets.models[id]);
   })
   Object.values(blockModels).forEach(m => m.flatten({ getBlockModel: id => blockModels[id] }));
 
@@ -325,7 +325,7 @@ function structureFromLitematic(litematic) {
     height = Math.max(height, region.y, region.y + region.height);
     depth = Math.max(depth, region.z, region.z + region.depth);
   }
-  
+
   const structure = new deepslate.Structure([width - global_x, height - global_y, depth - global_z]);
 
   // Add blocks from litematic NBT
@@ -352,13 +352,13 @@ function structureFromLitematic(litematic) {
         for (let z = start_z; z < Math.max(0, region.depth); z++) {
           const blockID = blocks[x - start_x][y - start_y][z - start_z];
           const position = [x + origin_x - global_x, y + origin_y - global_y, z + origin_z - global_z];
-        if (blockID > 0) { // Skip air-blocks
+          if (blockID > 0) { // Skip air-blocks
             if (blockID < blockPalette.length) {
               const blockInfo = blockPalette[blockID];
               const blockName = blockInfo.Name;
-            blockCount++;
-            
-            if (blockInfo.hasOwnProperty("Properties")) {
+              blockCount++;
+
+              if (blockInfo.hasOwnProperty("Properties")) {
                 structure.addBlock(position, blockName, blockInfo.Properties);
               } else {
                 structure.addBlock(position, blockName);

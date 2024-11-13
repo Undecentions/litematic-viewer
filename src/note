@@ -1,0 +1,1 @@
+Because of a bug in unpkg (https://github.com/mjackson/unpkg/issues/355), deepslate .cjs files don't work (which is what the newer versions use), and the alternative is to have deepslate change to .js (many libraries put them in the "cjs" folder). For now, the js file will just sit here. The file is taken right from the cjs, with no modifications (other than the file name).
