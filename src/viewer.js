@@ -61,6 +61,41 @@ function createRenderCanvas() {
   cameraYaw = 0.5;
   cameraPos = vec3.create();
 
+  // Create Deepslate Renderer
+  // Need chunksize 8 as seems to be a max number of faces per chunk that will render
+  const gl = canvas.getContext('webgl');
+  const renderer = new deepslate.StructureRenderer(gl, structure, deepslateResources, options={chunkSize: 8, useInvisibleBlockBuffer: false});
+
+  // Crappy controls
+  let viewDist = 4;
+  let xRotation = 0.8;
+  let yRotation = 0.5;
+  let xOffset = 0;
+  let yOffset = 0;
+  const size = structure.getSize();
+  let cameraPos = vec3.create();
+  vec3.set(cameraPos, -size[0] / 2, -size[1] / 2, -size[2] / 2);
+
+
+  // refactor this code to use separate functions for each type of control
+  function render() {
+
+    yRotation = yRotation % (Math.PI * 2);
+    xRotation = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, xRotation));
+    viewDist = Math.max(1, Math.min(20, viewDist));
+
+    const view = mat4.create();
+    mat4.rotateX(view, view, xRotation);
+    mat4.rotateY(view, view, yRotation);
+    mat4.translate(view, view, cameraPos);//[xOffset, yOffset, -viewDist]);
+    //mat4.translate(view, view, );
+
+    renderer.drawStructure(view);
+    renderer.drawGrid(view);
+  }
+
+  requestAnimationFrame(render);
+
   function move3d(direction, relativeVertical = true, sensitivity = 1) {
     let offset = vec3.create();
     vec3.set(offset,
