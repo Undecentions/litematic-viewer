@@ -19,20 +19,20 @@ function readLitematicFromNBTData(nbtdata) {
 
   var regions = nbtdata.root.Regions.value;
   for (let regionName in regions) {
-    
+
     var region = regions[regionName].value;
-    
+
     var blockPalette = __stripNBTTyping(region.BlockStatePalette);
-    
+
     // Find the minimum number of bits needed to express all blocks
     nbits = Math.ceil(Math.log2(blockPalette.length));
 
     x = region.Position.value.x.value;
     y = region.Position.value.y.value;
     z = region.Position.value.z.value;
-    width = region.Size.value.x.value; 
+    width = region.Size.value.x.value;
     height = region.Size.value.y.value;
-    depth = region.Size.value.z.value; 
+    depth = region.Size.value.z.value;
 
     var blockData = region.BlockStates.value;
 
@@ -41,6 +41,8 @@ function readLitematicFromNBTData(nbtdata) {
     var litematicRegion = new LitematicRegion(x, y, z, width, height, depth);
     litematicRegion.blocks = blocks;
     litematicRegion.blockPalette = blockPalette;
+    ['Size', 'Position', 'Entities']
+     .forEach(attr => { litematicRegion[attr] = __stripNBTTyping(region[attr]); });
 
     litematic.regions.push(litematicRegion);
   }
@@ -53,9 +55,9 @@ function processNBTRegionData(regionData, nbits, width, height, depth) {
   // The raw data is a list of nbits-wide numbers all packed together into a single array of 64-bit* ints
   // I ripped off some python code for this, can't remember where from.
   // (* of course this is javascript so each int is split into an array fo 2 32-bit ints)
-  
+
   mask = (1 << nbits) - 1;
-  
+
   y_shift = Math.abs(width * depth);
   z_shift = Math.abs(width);
   var blocks = new Array();
@@ -64,15 +66,15 @@ function processNBTRegionData(regionData, nbits, width, height, depth) {
     for (let y=0; y < Math.abs(height); y++) {
       blocks[x][y] = new Array();
       for (let z=0; z < Math.abs(depth); z++) {
-        
+
         index = y * y_shift + z * z_shift + x;
-        
+
         start_offset = index * nbits;
-        
+
         start_arr_index = start_offset >>> 5; /// divide by 32
         end_arr_index = ((index + 1) * nbits - 1) >>> 5;
         start_bit_offset = start_offset & 0x1F; // % 32
-        
+
         // This bit here is to handle the fact that the 64 bit numbers have to be broken down to
         // 32bit numbers in javascript.
         half_ind = start_arr_index >>> 1;
@@ -88,7 +90,7 @@ function processNBTRegionData(regionData, nbits, width, height, depth) {
             blockEnd = 0x0;
           }
         }
-        
+
         if (start_arr_index == end_arr_index) {
             blocks[x][y][z] = (blockStart >>> start_bit_offset) & mask;
         } else {
@@ -96,7 +98,7 @@ function processNBTRegionData(regionData, nbits, width, height, depth) {
             val = ((blockStart >>> start_bit_offset) & mask) | ((blockEnd << end_offset) & mask);
             blocks[x][y][z] = val;// & mask;
         }
-        
+
       }
     }
   }
@@ -127,7 +129,7 @@ function __stripNBTTyping(nbtData) {
         break;
       default:
         return nbtData.value;
-    } 
+    }
   } else {
     switch(nbtData.constructor) {
       case Object:
@@ -144,6 +146,8 @@ function __stripNBTTyping(nbtData) {
 }
 
 
+// Simple block counter
+// it has been noted that there is the rare possibility that two regions overlap the same blocks
 function getMaterialList(litematic) {
   var blockCounts = {};
 
@@ -175,4 +179,59 @@ function getMaterialList(litematic) {
   //console.log("Material list:", blockCounts);
 
   return blockCounts;
+}
+
+
+function calculateRegionBounds(litematic) {
+  // Generated with help from Claude
+  const regions = litematic.regions;
+
+  // Convert negative sizes to positive and adjust position
+  const normalizedRegions = regions.map(region => {
+    const normalized = {
+      pos: { ...region.Position },
+      size: { ...region.Size }
+    };
+
+    // For each dimension, if size is negative:
+    // - Make size positive
+    // - Adjust position by (size-1)
+    ['x', 'y', 'z'].forEach(dim => {
+      if (normalized.size[dim] < 0) {
+        normalized.pos[dim] += normalized.size[dim] + 1;
+        normalized.size[dim] = Math.abs(normalized.size[dim]);
+      }
+    });
+
+    return normalized;
+  });
+
+  // Find min/max bounds
+  const bounds = normalizedRegions.reduce((acc, region) => {
+    ['x', 'y', 'z'].forEach(dim => {
+      acc.min[dim] = Math.min(acc.min[dim], region.pos[dim]);
+      acc.max[dim] = Math.max(acc.max[dim], region.pos[dim] + region.size[dim] - 1);
+    });
+    return acc;
+  }, {
+    min: { x: Infinity, y: Infinity, z: Infinity },
+    max: { x: -Infinity, y: -Infinity, z: -Infinity }
+  });
+
+  // Calculate offsets relative to 0,0,0
+  const offsets = normalizedRegions.map(region => ({
+    x: region.pos.x - bounds.min.x,
+    y: region.pos.y - bounds.min.y,
+    z: region.pos.z - bounds.min.z
+  }));
+
+  return {
+    bounds,
+    offsets,
+    size: {
+      x: bounds.max.x - bounds.min.x + 1,
+      y: bounds.max.y - bounds.min.y + 1,
+      z: bounds.max.z - bounds.min.z + 1
+    }
+  };
 }
