@@ -1,13 +1,13 @@
 var structureLitematic;
 
 function loadAndProcessFile(file) {
-   
+
    if (deepslateResources == null) {return;}
 
    // Remove input form to stop people submitting twice
    const elem = document.getElementById('file-loader-panel');
    elem.parentNode.removeChild(elem);
-      
+
    //Read in file and process
    let reader = new FileReader();
    reader.readAsArrayBuffer(file);
@@ -16,11 +16,11 @@ function loadAndProcessFile(file) {
       //var buffer = new Uint8Array(reader.result);
       //console.log(buffer);
 
-      const nbtdata = deepslate.readNbt(new Uint8Array(reader.result));//.result; // Don't care about .compressed
+      const nbtdata = deepslate.NbtFile.read(new Uint8Array(reader.result), { compression: "gzip" }).toJson();//.result; // Don't care about .compressed
       console.log("Loaded litematic with NBT data:")
       console.log(nbtdata.value);
       structureLitematic = readLitematicFromNBTData(nbtdata);
-      
+
       createRenderCanvas();
 
       // Create sliders
@@ -36,7 +36,7 @@ function loadAndProcessFile(file) {
    reader.onerror = function() {
       console.log(reader.error);
    };
-   
+
 }
 
 function createMaterialsList(blockCounts) {

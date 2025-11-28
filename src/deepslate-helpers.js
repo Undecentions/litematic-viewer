@@ -17,12 +17,12 @@ function loadDeepslateResources(textureImage) {
   console.log("loading resources...")
   const blockDefinitions = {};
   Object.keys(assets.blockstates).forEach(id => {
-    blockDefinitions['minecraft:' + id] = deepslate.BlockDefinition.fromJson(id, assets.blockstates[id]);
+    blockDefinitions['minecraft:' + id] = deepslate.BlockDefinition.fromJson(assets.blockstates[id]);
   })
 
   const blockModels = {};
   Object.keys(assets.models).forEach(id => {
-    blockModels['minecraft:' + id] = deepslate.BlockModel.fromJson(id, assets.models[id]);
+    blockModels['minecraft:' + id] = deepslate.BlockModel.fromJson(assets.models[id]);
   })
   Object.values(blockModels).forEach(m => m.flatten({ getBlockModel: id => blockModels[id] }));
 
@@ -64,7 +64,7 @@ function structureFromLitematic(litematic, y_min=0, y_max=1024) {
   const { bounds, offsets, size } = calculateRegionBounds(litematic);
 
   const structure = new deepslate.Structure([size.x, size.y, size.z]);
-    
+
   for (const [index, region] of litematic.regions.entries()) {
     const offset = offsets[index];
 
@@ -93,18 +93,18 @@ function structureFromLitematic(litematic, y_min=0, y_max=1024) {
           blockID = blocks[x][y][z];
 
           if (blockID > 0) { // Skip air-blocks
-          
+
             if(blockID < blockPalette.length) {
               blockInfo = blockPalette[blockID];
               blockName = blockInfo.Name;
               blockCount++;
-              
+
               if (blockInfo.hasOwnProperty("Properties")) {
                 structure.addBlock([offset.x+x, offset.y+y, offset.z+z], blockName, blockInfo.Properties);
               } else {
                 structure.addBlock([offset.x+x, offset.y+y, offset.z+z], blockName);
               }
-              
+
             } else {
               // Something obvious so we know when things go wrong
               structure.addBlock([offset.x+x, offset.y+y, offset.z+z], "minecraft:cake")
