@@ -9,7 +9,7 @@ Load in the schematic with the upload button (or drag and drop) OR by pasting a 
 Limitations:
 * ~~Litematics with multiple regions do not load properly~~
 * Entities are not rendered
-* Some blocks do not display properly (we are working on updating deepslate version to fix this)
+* ~~Some blocks do not display properly (we are working on updating deepslate version to fix this)~~
 * Most of the settings currently do not do anything
 * There is currently no testing for all features/devices so YMMV
 
